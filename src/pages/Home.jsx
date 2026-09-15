@@ -1,11 +1,14 @@
 import "../css/Home.css"
 import MovieCard from "../components/MovieCard"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {searchMovies, getPopularMovies} from "../services/api"
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeSearch, setActiveSearch] = useState("");
+    const [sortFilter, setSortFilter] = useState("popular");
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const filterMenuRef = useRef(null);
     const [movies, setMovies] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,17 +30,23 @@ function Home() {
         loadPopularMovies()
     }, [])
 
-    const handleSearch = async (e) => {
-        e.preventDefault()
+    useEffect(() => {
+        const closeFiltersWhenClickingOutside = (event) => {
+            if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
+                setFiltersOpen(false)
+            }
+        }
 
-        if (!searchQuery.trim()) return
-        if (loading) return
+        document.addEventListener("mousedown", closeFiltersWhenClickingOutside)
+        return () => document.removeEventListener("mousedown", closeFiltersWhenClickingOutside)
+    }, [])
 
+    const loadMovies = async (query, selectedSort) => {
         setLoading(true)
         try {
-            const searchResults = await searchMovies(searchQuery)
+            const searchResults = await searchMovies(query, selectedSort)
             setMovies(searchResults)
-            setActiveSearch(searchQuery.trim())
+            setActiveSearch(query.trim())
             setError(null)
         } catch (err) {
             console.log(err)
@@ -46,9 +55,27 @@ function Home() {
         finally {
             setLoading(false)
         }
+    }
+
+    const handleSearch = async (e) => {
+        e.preventDefault()
+
+        if (!searchQuery.trim()) return
+        if (loading) return
+
+        await loadMovies(searchQuery, sortFilter)
 
         setSearchQuery("");
     }; 
+
+    const handleFilterChange = async (filter) => {
+        setSortFilter(filter)
+        setFiltersOpen(false)
+
+        if (!loading) {
+            await loadMovies(activeSearch, filter)
+        }
+    }
 
     return (
     <div className="home container-fluid">
@@ -61,6 +88,31 @@ function Home() {
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button type="submit" className="search-button btn btn-danger">Search</button>
+            <div className="filter-menu" ref={filterMenuRef}>
+                <button
+                    type="button"
+                    className="filter-button btn btn-outline-light"
+                    onClick={() => setFiltersOpen(!filtersOpen)}
+                    aria-expanded={filtersOpen}
+                >
+                    Filters <span aria-hidden="true">▾</span>
+                </button>
+                {filtersOpen && (
+                    <div className="filter-dropdown">
+                        <p className="filter-title">Sort results</p>
+                        {["recent", "popular", "ascending", "descending"].map((filter) => (
+                            <label className="filter-option" key={filter}>
+                                <input
+                                    type="checkbox"
+                                    checked={sortFilter === filter}
+                                    onChange={() => handleFilterChange(filter)}
+                                />
+                                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                            </label>
+                        ))}
+                    </div>
+                )}
+            </div>
         </form>
 
         {error && <div className="error-message">{error}</div>}

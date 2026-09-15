@@ -26,7 +26,7 @@ export const getPopularMovies = async () => {
     return data.results
 };
 
-export const searchMovies = async (query = "") => {
+export const searchMovies = async (query = "", sortOption = "popular") => {
     const searchText = query.trim();
     const searchTypeMatch = searchText.match(/^(actor|director|genre):\s*/i);
     let searchType = searchTypeMatch?.[1].toLowerCase() || "movie";
@@ -36,6 +36,12 @@ export const searchMovies = async (query = "") => {
     const movieQuery = typedSearch.replace(releaseDate, "").trim();
     const isYearSearch = releaseDate.length === 4;
     const params = new URLSearchParams({ api_key: API_KEY });
+    const sortBy = {
+        recent: "primary_release_date.desc",
+        popular: "popularity.desc",
+        ascending: "primary_release_date.asc",
+        descending: "primary_release_date.desc"
+    }[sortOption] || "popularity.desc";
 
     if (searchType === "movie" && movieGenres[movieQuery.toLowerCase()]) {
         searchType = "genre";
@@ -55,7 +61,11 @@ export const searchMovies = async (query = "") => {
         const endDate = isYearSearch ? `${releaseDate}-12-31` : releaseDate;
         params.set("primary_release_date.gte", startDate);
         params.set("primary_release_date.lte", endDate);
-        params.set("sort_by", "popularity.desc");
+        params.set("sort_by", sortBy);
+    }
+
+    if (!movieQuery && !releaseDate) {
+        params.set("sort_by", sortBy);
     }
 
     if (searchType === "actor" || searchType === "director") {
@@ -66,7 +76,7 @@ export const searchMovies = async (query = "") => {
 
         params.delete("query");
         params.set(searchType === "actor" ? "with_cast" : "with_crew", personId);
-        params.set("sort_by", "popularity.desc");
+        params.set("sort_by", sortBy);
     }
 
     const endpoint = searchType === "movie" && movieQuery
@@ -84,7 +94,7 @@ export const searchMovies = async (query = "") => {
         if (person) {
             params.delete("query");
             params.set(person.known_for_department === "Directing" ? "with_crew" : "with_cast", person.id);
-            params.set("sort_by", "popularity.desc");
+            params.set("sort_by", sortBy);
 
             const personMoviesResponse = await fetch(`${BASE_URL}/discover/movie?${params.toString()}`);
             const personMoviesData = await personMoviesResponse.json();
@@ -92,11 +102,21 @@ export const searchMovies = async (query = "") => {
         }
     }
 
-    if (!releaseDate || searchType !== "movie") {
+    if (searchType !== "movie") {
         return results;
     }
 
-    return results.filter((movie) => isYearSearch
+    const filteredResults = !releaseDate ? results : results.filter((movie) => isYearSearch
         ? movie.release_date?.startsWith(releaseDate)
         : movie.release_date === releaseDate);
+
+    if (sortOption === "popular") return filteredResults;
+
+    return filteredResults.sort((firstMovie, secondMovie) => {
+        const firstDate = firstMovie.release_date || "9999-12-31";
+        const secondDate = secondMovie.release_date || "9999-12-31";
+        return sortOption === "recent" || sortOption === "descending"
+            ? secondDate.localeCompare(firstDate)
+            : firstDate.localeCompare(secondDate);
+    });
 };

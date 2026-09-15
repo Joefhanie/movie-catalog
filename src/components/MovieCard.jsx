@@ -20,6 +20,18 @@ const genreNames = {
     10752: "War"
 };
 
+function formatReleaseDate(releaseDate) {
+    if (!releaseDate) return "Release date unknown";
+
+    const [year, month] = releaseDate.split("-").map(Number);
+    if (!year || !month) return releaseDate;
+
+    return new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        year: "numeric"
+    }).format(new Date(year, month - 1));
+}
+
 function MovieCard({ movie }) {
     const {isFavorite, addToFavorites, removeFromFavorites} = useMovieContext();
     const favorite = isFavorite(movie.id)
@@ -46,7 +58,7 @@ function MovieCard({ movie }) {
         </div>
         <div className="movie-info card-body">
             <h3 className="card-title">{movie.title}</h3>
-            <p className="card-text movie-year">{movie.release_date?.split("-")[0]}</p>
+            <p className="card-text movie-year">{formatReleaseDate(movie.release_date)}</p>
             {genres?.length > 0 && (
                 <div className="movie-genres">
                     {genres.map((genre) => (

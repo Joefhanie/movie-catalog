@@ -110,9 +110,10 @@
   margin-bottom: 0;
 }
 
-.movie-info h3 {
+.movie-card .movie-info h3.card-title {
   font-size: 1rem;
   font-weight: 600;
+  color: #ffffff;
   margin: 0;
 }
 
@@ -131,7 +132,8 @@
 .genre-pill {
   color: #c4d5e8;
   background-color: #172d49;
-  border: 1px solid #2b4a6c;
+  color: #ffffff;
+  margin: 0;
   border-radius: 999px;
   padding: 0.35rem 0.6rem;
   font-size: 0.75rem;

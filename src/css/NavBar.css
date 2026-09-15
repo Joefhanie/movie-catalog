@@ -23,6 +23,11 @@
   background-color: #162b46;
 }
 
+.nav-button {
+  border: 0;
+  font: inherit;
+}
+
 @media (max-width: 768px) {
   .navbar {
     padding: 1rem;

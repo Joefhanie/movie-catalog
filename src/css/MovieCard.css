@@ -44,6 +44,17 @@
   padding: 1rem;
 }
 
+.movie-description {
+  color: white;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+}
+
 .movie-card:hover .movie-overlay {
   opacity: 1;
 }
@@ -99,6 +110,23 @@
 .movie-info p {
   color: #999;
   font-size: 0.9rem;
+}
+
+.movie-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.genre-pill {
+  color: #ffd6d8;
+  background-color: rgba(229, 9, 20, 0.2);
+  border: 1px solid rgba(229, 9, 20, 0.5);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
 }
 
 .user-rating {

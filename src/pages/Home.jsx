@@ -5,6 +5,7 @@ import {searchMovies, getPopularMovies} from "../services/api"
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeSearch, setActiveSearch] = useState("");
     const [movies, setMovies] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,6 +37,7 @@ function Home() {
         try {
             const searchResults = await searchMovies(searchQuery)
             setMovies(searchResults)
+            setActiveSearch(searchQuery.trim())
             setError(null)
         } catch (err) {
             console.log(err)
@@ -62,6 +64,8 @@ function Home() {
         </form>
 
         {error && <div className="error-message">{error}</div>}
+
+        {activeSearch && <h2 className="search-results-title">Results for "{activeSearch}"</h2>}
 
         {loading ? (<div className="loading">Loading...</div>) 
         : (<div className="movies-grid">

@@ -5,7 +5,7 @@
 }
 
 .search-form {
-  max-width: 600px;
+  max-width: 760px;
   margin: 0 auto 2rem;
   display: flex;
   gap: 1rem;
@@ -50,6 +50,16 @@
 
   .search-form {
     margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .search-input,
+  .search-button {
+    min-width: 0;
+  }
+
+  .search-input {
+    flex-basis: 100%;
   }
 }
 

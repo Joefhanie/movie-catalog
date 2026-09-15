@@ -20,10 +20,10 @@ export const movieGenres = {
     western: 37
 };
 
-export const getPopularMovies = async () => {
-    const response = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}`);
+export const getPopularMovies = async (page = 1) => {
+    const response = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${page}`);
     const data = await response.json()
-    return data.results
+    return { results: data.results || [], hasMore: page < data.total_pages }
 };
 
 export const getMovieDetails = async (movieId) => {
@@ -32,7 +32,7 @@ export const getMovieDetails = async (movieId) => {
     return data;
 };
 
-export const searchMovies = async (query = "", sortOption = "popular", genreFilter = "") => {
+export const searchMovies = async (query = "", sortOption = "popular", genreFilter = "", page = 1) => {
     const searchText = query.trim();
     const searchTypeMatch = searchText.match(/^(actor|director|genre):\s*/i);
     let searchType = searchTypeMatch?.[1].toLowerCase() || "movie";
@@ -41,7 +41,7 @@ export const searchMovies = async (query = "", sortOption = "popular", genreFilt
     const releaseDate = dateMatch?.[0] || "";
     const movieQuery = typedSearch.replace(releaseDate, "").trim();
     const isYearSearch = releaseDate.length === 4;
-    const params = new URLSearchParams({ api_key: API_KEY });
+    const params = new URLSearchParams({ api_key: API_KEY, page });
     const today = new Date().toISOString().split("T")[0];
     const sortBy = {
         recent: "primary_release_date.desc",
@@ -56,7 +56,7 @@ export const searchMovies = async (query = "", sortOption = "popular", genreFilt
 
     if (searchType === "genre") {
         const genreId = movieGenres[movieQuery.toLowerCase()];
-        if (!genreId) return [];
+        if (!genreId) return { results: [], hasMore: false };
         params.set("with_genres", genreId);
     } else if (genreFilter && movieGenres[genreFilter]) {
         params.set("with_genres", movieGenres[genreFilter]);
@@ -85,7 +85,7 @@ export const searchMovies = async (query = "", sortOption = "popular", genreFilt
         const personResponse = await fetch(`${BASE_URL}/search/person?api_key=${API_KEY}&query=${encodeURIComponent(movieQuery)}`);
         const personData = await personResponse.json();
         const personId = personData.results?.[0]?.id;
-        if (!personId) return [];
+               if (!personId) return { results: [], hasMore: false };
 
         params.delete("query");
         params.set(searchType === "actor" ? "with_cast" : "with_crew", personId);
@@ -112,11 +112,22 @@ export const searchMovies = async (query = "", sortOption = "popular", genreFilt
             const personMoviesResponse = await fetch(`${BASE_URL}/discover/movie?${params.toString()}`);
             const personMoviesData = await personMoviesResponse.json();
             return personMoviesData.results || [];
+                    return {
+                        results: personMoviesData.results || [],
+                        hasMore: page < personMoviesData.total_pages
+                    };
+            const results = data.results || [];
+            const hasMore = page < data.total_pages;
+                    return {
+                        results: personMoviesData.results || [],
+                        hasMore: page < personMoviesData.total_pages
+                    };
         }
     }
 
     if (searchType !== "movie") {
         return results;
+        return { results, hasMore };
     }
 
     const filteredResults = results.filter((movie) => {
@@ -136,12 +147,17 @@ export const searchMovies = async (query = "", sortOption = "popular", genreFilt
     });
 
     if (sortOption === "popular") return filteredResults;
+    if (sortOption === "popular") return { results: filteredResults, hasMore };
 
     return filteredResults.sort((firstMovie, secondMovie) => {
+            const sortedResults = filteredResults.sort((firstMovie, secondMovie) => {
         const firstDate = firstMovie.release_date || "9999-12-31";
         const secondDate = secondMovie.release_date || "9999-12-31";
         return sortOption === "recent" || sortOption === "descending"
             ? secondDate.localeCompare(firstDate)
             : firstDate.localeCompare(secondDate);
     });
+    });
+
+    return { results: sortedResults, hasMore };
 };

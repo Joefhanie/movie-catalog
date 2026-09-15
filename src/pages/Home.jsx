@@ -12,6 +12,9 @@ function Home() {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const filterMenuRef = useRef(null);
     const [movies, setMovies] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [searchParams] = useSearchParams();
@@ -21,7 +24,9 @@ function Home() {
         const loadPopularMovies = async () => {
             try {
                 const popularMovies = await getPopularMovies()
-                setMovies(popularMovies)
+                setMovies(popularMovies.results)
+                setPage(1)
+                setHasMore(popularMovies.hasMore)
             } catch (err) {
                 console.log(err)
                 setError("Failed to load movies...")
@@ -43,8 +48,10 @@ function Home() {
 
             try {
                 const searchResults = await searchMovies(linkedSearch, sortFilter, genreFilter)
-                setMovies(searchResults)
+                setMovies(searchResults.results)
                 setActiveSearch(linkedSearch)
+                setPage(1)
+                setHasMore(searchResults.hasMore)
                 setError(null)
             } catch (err) {
                 console.log(err)
@@ -71,8 +78,10 @@ function Home() {
         setLoading(true)
         try {
             const searchResults = await searchMovies(query, selectedSort, selectedGenre)
-            setMovies(searchResults)
+            setMovies(searchResults.results)
             setActiveSearch(query.trim())
+            setPage(1)
+            setHasMore(searchResults.hasMore)
             setError(null)
         } catch (err) {
             console.log(err)
@@ -109,6 +118,27 @@ function Home() {
 
         if (!loading) {
             await loadMovies(activeSearch, sortFilter, selectedGenre)
+        }
+    }
+
+    const handleLoadMore = async () => {
+        if (loading || loadingMore || !hasMore) return
+
+        setLoadingMore(true)
+        const nextPage = page + 1
+
+        try {
+            const nextResults = activeSearch
+                ? await searchMovies(activeSearch, sortFilter, genreFilter, nextPage)
+                : await getPopularMovies(nextPage)
+            setMovies((currentMovies) => [...currentMovies, ...nextResults.results])
+            setPage(nextPage)
+            setHasMore(nextResults.hasMore)
+        } catch (err) {
+            console.log(err)
+            setError("Failed to load more movies...")
+        } finally {
+            setLoadingMore(false)
         }
     }
 
@@ -174,6 +204,11 @@ function Home() {
                 <MovieCard movie={movie} key={movie.id} />
             ))}
         </div>
+        )}
+        {!loading && hasMore && (
+            <button className="load-more-button btn btn-outline-light" onClick={handleLoadMore}>
+                {loadingMore ? "Loading..." : "Load more movies"}
+            </button>
         )}
     </div>)
 }

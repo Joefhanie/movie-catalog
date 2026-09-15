@@ -51,16 +51,16 @@ function Home() {
     }; 
 
     return (
-    <div className="home">
-        <form onSubmit={handleSearch} className="search-form">
+    <div className="home container-fluid">
+        <form onSubmit={handleSearch} className="search-form row g-2">
             <input
                 type="text"
                 placeholder="Search for Movies..."
-                className="search-input"
+                className="search-input form-control"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button type="submit" className="search-button">Search</button>
+            <button type="submit" className="search-button btn btn-danger">Search</button>
         </form>
 
         {error && <div className="error-message">{error}</div>}

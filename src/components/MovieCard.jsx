@@ -34,23 +34,23 @@ function MovieCard({ movie }) {
         else addToFavorites(movie)
     }
 
-    return <div className="movie-card">
+    return <div className="movie-card card h-100">
         <div className="movie-poster">
             <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} />
             <div className="movie-overlay">
                 <p className="movie-description">
                     {movie.overview || "No description available."}
                 </p>
-                <button className={`favorite-btn ${favorite ? "active" : ""}`} onClick={onFavorite}>♥</button>
+                <button aria-label={favorite ? "Remove from favorites" : "Add to favorites"} className={`favorite-btn btn ${favorite ? "active" : ""}`} onClick={onFavorite}>♥</button>
             </div>
         </div>
-        <div className="movie-info">
-            <h3>{movie.title}</h3>
-            <p>{movie.release_date?.split("-")[0]}</p>
+        <div className="movie-info card-body">
+            <h3 className="card-title">{movie.title}</h3>
+            <p className="card-text movie-year">{movie.release_date?.split("-")[0]}</p>
             {genres?.length > 0 && (
                 <div className="movie-genres">
                     {genres.map((genre) => (
-                        <span className="genre-pill" key={genre}>{genre}</span>
+                        <span className="genre-pill badge" key={genre}>{genre}</span>
                     ))}
                 </div>
             )}

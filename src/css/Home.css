@@ -107,6 +107,26 @@
   accent-color: #e53945;
 }
 
+.genre-filter-label {
+  display: block;
+  margin: 0.75rem 0 0.35rem;
+  color: #9eb0c5;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.genre-filter-select {
+  width: 100%;
+  padding: 0.45rem;
+  border: 1px solid #2b4a6c;
+  border-radius: 5px;
+  background-color: #08111f;
+  color: #eef4fb;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
 .search-results-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;

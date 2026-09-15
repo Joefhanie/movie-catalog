@@ -36,6 +36,10 @@
   display: block;
 }
 
+.movie-details-poster.poster-placeholder {
+  min-height: 420px;
+}
+
 .movie-details-info {
   padding: 1rem 0;
 }

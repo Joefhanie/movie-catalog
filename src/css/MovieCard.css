@@ -27,6 +27,17 @@
   object-fit: cover;
 }
 
+.poster-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem;
+  color: #9eb0c5;
+  background-color: #172d49;
+  text-align: center;
+}
+
 .movie-overlay {
   position: absolute;
   top: 0;

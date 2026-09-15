@@ -64,11 +64,15 @@ function MovieDetails() {
         <article className="movie-details container-fluid">
             <Link to="/" className="back-link">← Back to movies</Link>
             <div className="movie-details-content">
-                <img
-                    className="movie-details-poster"
-                    src={`https://image.tmdb.org/t/p/w780${movie.poster_path}`}
-                    alt={movie.title}
-                />
+                {movie.poster_path ? (
+                    <img
+                        className="movie-details-poster"
+                        src={`https://image.tmdb.org/t/p/w780${movie.poster_path}`}
+                        alt={movie.title}
+                    />
+                ) : (
+                    <div className="movie-details-poster poster-placeholder">No poster available</div>
+                )}
                 <div className="movie-details-info">
                     <h1>{movie.title}</h1>
                     <p className="movie-details-tagline">{movie.tagline}</p>

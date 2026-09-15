@@ -1,7 +1,7 @@
 const API_KEY= "5649e7720b5a66638279ae616b253a12";
 const BASE_URL = "https://api.themoviedb.org/3"
 
-const movieGenres = {
+export const movieGenres = {
     action: 28,
     adventure: 12,
     animation: 16,
@@ -32,7 +32,7 @@ export const getMovieDetails = async (movieId) => {
     return data;
 };
 
-export const searchMovies = async (query = "", sortOption = "popular") => {
+export const searchMovies = async (query = "", sortOption = "popular", genreFilter = "") => {
     const searchText = query.trim();
     const searchTypeMatch = searchText.match(/^(actor|director|genre):\s*/i);
     let searchType = searchTypeMatch?.[1].toLowerCase() || "movie";
@@ -42,6 +42,7 @@ export const searchMovies = async (query = "", sortOption = "popular") => {
     const movieQuery = typedSearch.replace(releaseDate, "").trim();
     const isYearSearch = releaseDate.length === 4;
     const params = new URLSearchParams({ api_key: API_KEY });
+    const today = new Date().toISOString().split("T")[0];
     const sortBy = {
         recent: "primary_release_date.desc",
         popular: "popularity.desc",
@@ -57,6 +58,8 @@ export const searchMovies = async (query = "", sortOption = "popular") => {
         const genreId = movieGenres[movieQuery.toLowerCase()];
         if (!genreId) return [];
         params.set("with_genres", genreId);
+    } else if (genreFilter && movieGenres[genreFilter]) {
+        params.set("with_genres", movieGenres[genreFilter]);
     }
 
     if (searchType === "movie" && movieQuery) params.set("query", movieQuery);
@@ -72,6 +75,10 @@ export const searchMovies = async (query = "", sortOption = "popular") => {
 
     if (!movieQuery && !releaseDate) {
         params.set("sort_by", sortBy);
+    }
+
+    if (sortOption === "recent") {
+        params.set("primary_release_date.lte", today);
     }
 
     if (searchType === "actor" || searchType === "director") {
@@ -112,9 +119,21 @@ export const searchMovies = async (query = "", sortOption = "popular") => {
         return results;
     }
 
-    const filteredResults = !releaseDate ? results : results.filter((movie) => isYearSearch
-        ? movie.release_date?.startsWith(releaseDate)
-        : movie.release_date === releaseDate);
+    const filteredResults = results.filter((movie) => {
+        if (sortOption === "recent" && (!movie.release_date || movie.release_date > today)) {
+            return false;
+        }
+
+        if (genreFilter && !movie.genre_ids?.includes(movieGenres[genreFilter])) {
+            return false;
+        }
+
+        if (!releaseDate) return true;
+
+        return isYearSearch
+            ? movie.release_date?.startsWith(releaseDate)
+            : movie.release_date === releaseDate;
+    });
 
     if (sortOption === "popular") return filteredResults;
 

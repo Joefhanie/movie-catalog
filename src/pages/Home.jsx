@@ -2,12 +2,13 @@ import "../css/Home.css"
 import MovieCard from "../components/MovieCard"
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import {searchMovies, getPopularMovies} from "../services/api"
+import {movieGenres, searchMovies, getPopularMovies} from "../services/api"
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeSearch, setActiveSearch] = useState("");
     const [sortFilter, setSortFilter] = useState("popular");
+    const [genreFilter, setGenreFilter] = useState("");
     const [filtersOpen, setFiltersOpen] = useState(false);
     const filterMenuRef = useRef(null);
     const [movies, setMovies] = useState([]);
@@ -41,7 +42,7 @@ function Home() {
             setLoading(true)
 
             try {
-                const searchResults = await searchMovies(linkedSearch, sortFilter)
+                const searchResults = await searchMovies(linkedSearch, sortFilter, genreFilter)
                 setMovies(searchResults)
                 setActiveSearch(linkedSearch)
                 setError(null)
@@ -54,7 +55,7 @@ function Home() {
         }
 
         loadLinkedSearch()
-    }, [linkedSearch, sortFilter])
+    }, [linkedSearch, sortFilter, genreFilter])
     useEffect(() => {
         const closeFiltersWhenClickingOutside = (event) => {
             if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
@@ -66,10 +67,10 @@ function Home() {
         return () => document.removeEventListener("mousedown", closeFiltersWhenClickingOutside)
     }, [])
 
-    const loadMovies = async (query, selectedSort) => {
+    const loadMovies = async (query, selectedSort, selectedGenre) => {
         setLoading(true)
         try {
-            const searchResults = await searchMovies(query, selectedSort)
+            const searchResults = await searchMovies(query, selectedSort, selectedGenre)
             setMovies(searchResults)
             setActiveSearch(query.trim())
             setError(null)
@@ -88,7 +89,7 @@ function Home() {
         if (!searchQuery.trim()) return
         if (loading) return
 
-        await loadMovies(searchQuery, sortFilter)
+        await loadMovies(searchQuery, sortFilter, genreFilter)
 
         setSearchQuery("");
     }; 
@@ -98,7 +99,16 @@ function Home() {
         setFiltersOpen(false)
 
         if (!loading) {
-            await loadMovies(activeSearch, filter)
+            await loadMovies(activeSearch, filter, genreFilter)
+        }
+    }
+
+    const handleGenreChange = async (event) => {
+        const selectedGenre = event.target.value
+        setGenreFilter(selectedGenre)
+
+        if (!loading) {
+            await loadMovies(activeSearch, sortFilter, selectedGenre)
         }
     }
 
@@ -135,6 +145,20 @@ function Home() {
                                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
                             </label>
                         ))}
+                        <label className="genre-filter-label" htmlFor="genre-filter">Genre</label>
+                        <select
+                            id="genre-filter"
+                            className="genre-filter-select"
+                            value={genreFilter}
+                            onChange={handleGenreChange}
+                        >
+                            <option value="">All genres</option>
+                            {Object.keys(movieGenres).map((genre) => (
+                                <option value={genre} key={genre}>
+                                    {genre.replace(/\b\w/g, (letter) => letter.toUpperCase())}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 )}
             </div>

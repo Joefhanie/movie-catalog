@@ -1,6 +1,7 @@
 import "../css/Home.css"
 import MovieCard from "../components/MovieCard"
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import {searchMovies, getPopularMovies} from "../services/api"
 
 function Home() {
@@ -12,6 +13,8 @@ function Home() {
     const [movies, setMovies] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [searchParams] = useSearchParams();
+    const linkedSearch = searchParams.get("search") || "";
 
     useEffect(() => {
         const loadPopularMovies = async () => {
@@ -28,8 +31,30 @@ function Home() {
         }
 
         loadPopularMovies()
-    }, [])
+    }, [linkedSearch])
 
+    useEffect(() => {
+        if (!linkedSearch) return
+
+        const loadLinkedSearch = async () => {
+            setSearchQuery(linkedSearch)
+            setLoading(true)
+
+            try {
+                const searchResults = await searchMovies(linkedSearch, sortFilter)
+                setMovies(searchResults)
+                setActiveSearch(linkedSearch)
+                setError(null)
+            } catch (err) {
+                console.log(err)
+                setError("Failed to load movies...")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadLinkedSearch()
+    }, [linkedSearch, sortFilter])
     useEffect(() => {
         const closeFiltersWhenClickingOutside = (event) => {
             if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {

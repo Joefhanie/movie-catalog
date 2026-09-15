@@ -1,5 +1,6 @@
 import "../css/MovieCard.css"
 import { useMovieContext } from "../contexts/MovieContext"
+import { Link } from "react-router-dom"
 
 const genreNames = {
     12: "Adventure",
@@ -46,7 +47,8 @@ function MovieCard({ movie }) {
         else addToFavorites(movie)
     }
 
-    return <div className="movie-card card h-100">
+    return <Link to={`/movie/${movie.id}`} className="movie-card-link">
+        <div className="movie-card card h-100">
         <div className="movie-poster">
             <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} />
             <div className="movie-overlay">
@@ -67,7 +69,8 @@ function MovieCard({ movie }) {
                 </div>
             )}
         </div>
-    </div>
+        </div>
+    </Link>
 }
 
 export default MovieCard

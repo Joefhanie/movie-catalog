@@ -26,6 +26,12 @@ export const getPopularMovies = async () => {
     return data.results
 };
 
+export const getMovieDetails = async (movieId) => {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=videos,credits`);
+    const data = await response.json();
+    return data;
+};
+
 export const searchMovies = async (query = "", sortOption = "popular") => {
     const searchText = query.trim();
     const searchTypeMatch = searchText.match(/^(actor|director|genre):\s*/i);
